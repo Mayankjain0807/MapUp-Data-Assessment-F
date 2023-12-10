@@ -45,8 +45,19 @@ def unroll_distance_matrix(df)->pd.DataFrame():
         pandas.DataFrame: Unrolled DataFrame containing columns 'id_start', 'id_end', and 'distance'.
     """
     # Write your logic here
+    unrolled_data = []
 
-    return df
+    # Iterate over the rows and columns of the distance matrix
+    for i in df.index:
+        for j in df.columns:
+            if i != j: 
+                # Exclude same id_start to id_end
+                unrolled_data.append({'id_start': i, 'id_end': j, 'distance': distance_matrix.at[i, j]})
+
+    # Create a DataFrame from the unrolled data
+    unrolled_df = pd.DataFrame(unrolled_data)
+
+    return unrolled_df
 
 
 def find_ids_within_ten_percentage_threshold(df, reference_id)->pd.DataFrame():
