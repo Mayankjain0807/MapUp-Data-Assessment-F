@@ -13,26 +13,13 @@ def generate_car_matrix(df)->pd.DataFrame:
                           where 'id_1' and 'id_2' are used as indices and columns respectively.
     """
     # Write your logic here
-    distance_matrix = pd.DataFrame(index=unique_ids, columns=unique_ids)
-
-    # Fill the matrix with cumulative distances
-    for index, row in df.iterrows():
-        distance_matrix.at[row['id_start'], row['id_end']] = row['distance']
-        distance_matrix.at[row['id_end'], row['id_start']] = row['distance']
-
-    # Fill diagonal with zeros
-    for i in unique_ids:
-        distance_matrix.at[i, i] = 0
-    # Fill missing values with cumulative distances
-    for i in unique_ids:
-        for j in unique_ids:
-            if pd.isna(distance_matrix.at[i, j]):
-                for k in unique_ids:
-                    if not pd.isna(distance_matrix.at[i, k]) and not pd.isna(distance_matrix.at[k, j]):
-                        distance_matrix.at[i, j] = distance_matrix.at[i, k] + distance_matrix.at[k, j]
-                        distance_matrix.at[j, i] = distance_matrix.at[i, j]
-
-    return distance_matrix
+    table_1 =  pd.pivot_table(df, values ='car', index =['id_1'], 
+                         columns =['id_2']) 
+    arr = table_1.to_numpy()
+    np.fill_diagonal(arr, 0)
+    # convert the array back to a DataFrame
+    df_2 = pd.DataFrame(arr, columns=table_1.columns, index=table_1.index)
+    return df_2
 
 
 def get_type_count(df)->dict:
@@ -46,7 +33,18 @@ def get_type_count(df)->dict:
         dict: A dictionary with car types as keys and their counts as values.
     """
     # Write your logic here
-
+    categorical_data = [] 
+    for index, row in df.iterrows():
+        if row['car'] <= 15:
+            categorical_data.append("low")
+        elif row['car'] >15 and row['car'] <=25:
+            categorical_data.append("medium")
+        else:
+            categorical_data.append("high")
+    df['car_type'] = pd.DataFrame(categorical_data)
+    dict = {}
+    for i in categorical_data:
+        dict[i] = categorical_data.count(i)
     return dict()
 
 
@@ -61,6 +59,13 @@ def get_bus_indexes(df)->list:
         list: List of indexes where 'bus' values exceed twice the mean.
     """
     # Write your logic here
+    mean_bus = df['bus'].mean()*2
+    list = [] 
+    for index, row in df.iterrows():
+        if row['bus'] > mean_bus:
+            list.append(index)
+
+    list.sort()
 
     return list()
 
@@ -91,6 +96,12 @@ def multiply_matrix(matrix)->pd.DataFrame:
         pandas.DataFrame: Modified matrix with values multiplied based on custom conditions.
     """
     # Write your logic here
+    for index, row in matrix.iterrows():
+        for i in matrix.columns:
+            if row[i] > 20:
+                row[i] = round(row[i]*0.75,2)
+            else:
+                row[i] = round(row[i]*1.25,2)
 
     return matrix
 
