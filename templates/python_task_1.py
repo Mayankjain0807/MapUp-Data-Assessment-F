@@ -13,8 +13,26 @@ def generate_car_matrix(df)->pd.DataFrame:
                           where 'id_1' and 'id_2' are used as indices and columns respectively.
     """
     # Write your logic here
+    distance_matrix = pd.DataFrame(index=unique_ids, columns=unique_ids)
 
-    return df
+    # Fill the matrix with cumulative distances
+    for index, row in df.iterrows():
+        distance_matrix.at[row['id_start'], row['id_end']] = row['distance']
+        distance_matrix.at[row['id_end'], row['id_start']] = row['distance']
+
+    # Fill diagonal with zeros
+    for i in unique_ids:
+        distance_matrix.at[i, i] = 0
+    # Fill missing values with cumulative distances
+    for i in unique_ids:
+        for j in unique_ids:
+            if pd.isna(distance_matrix.at[i, j]):
+                for k in unique_ids:
+                    if not pd.isna(distance_matrix.at[i, k]) and not pd.isna(distance_matrix.at[k, j]):
+                        distance_matrix.at[i, j] = distance_matrix.at[i, k] + distance_matrix.at[k, j]
+                        distance_matrix.at[j, i] = distance_matrix.at[i, j]
+
+    return distance_matrix
 
 
 def get_type_count(df)->dict:
